@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RevealObserver } from "@/components/RevealObserver";
+import { ProductAR } from "@/components/products/ProductAR";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { categoryLabel, getProduct, products, relatedProducts } from "@/content/products";
@@ -98,6 +99,21 @@ export default async function ProductPage({ params }: Props) {
             </div>
           </div>
         </section>
+
+        {product.ar && (
+          <section className="section">
+            <div className="wrap">
+              <header className="section__head" data-reveal>
+                <div>
+                  <span className="label label--gold rule">Thực tế tăng cường</span>
+                  <h2>Xem thang máy trong không gian của bạn</h2>
+                </div>
+                <p className="muted">Xoay mô hình 3D, hoặc dùng camera điện thoại để đặt thang máy vào đúng kích thước thật.</p>
+              </header>
+              <ProductAR src={product.ar.glb} alt={product.ar.alt} />
+            </div>
+          </section>
+        )}
 
         <section className="section section--low">
           <div className="wrap split split--top">

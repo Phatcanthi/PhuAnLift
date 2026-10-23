@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { CompanyMap } from "@/components/CompanyMap";
 import { HeroExperience } from "@/components/hero/HeroExperience";
 import { ProductRail } from "@/components/products/ProductRail";
 import { RevealObserver } from "@/components/RevealObserver";
@@ -395,6 +396,7 @@ export default function HomePage() {
                   <dd>{company.address}</dd>
                 </div>
               </dl>
+              <CompanyMap />
               <div className="hero__actions">
                 <a className="btn btn--solid" href={tel(company.hotline)}>
                   Gọi hotline

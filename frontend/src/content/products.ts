@@ -35,6 +35,8 @@ export type Product = {
   features: string[];
   specs: Spec[];
   doors?: string[];
+  /** 3D model (glTF binary, authored in metres) shown with an AR button on the detail page. */
+  ar?: { glb: string; alt: string };
   /** Show the cabin interior styles (V01 – V11) on the detail page. */
   cabins?: boolean;
   applications: string[];
@@ -75,6 +77,7 @@ export const products: Product[] = [
       { label: "Cứu hộ khi mất điện", value: "Nguồn dự phòng UPS" },
     ],
     doors: traction.chips,
+    ar: { glb: "/models/thang-may-elevator-only.glb", alt: "Mô hình 3D cabin thang máy ELITE" },
     cabins: true,
     applications: ["Biệt thự", "Nhà phố", "Căn hộ penthouse", "Nhà ở cải tạo"],
     draft: true,
