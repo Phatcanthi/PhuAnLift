@@ -1,33 +1,42 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RevealObserver } from "@/components/RevealObserver";
 import { ProductAR } from "@/components/products/ProductAR";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
-import { categoryLabel, getProduct, products, relatedProducts } from "@/content/products";
-import { cabinNote, cabins, company, wellFrames } from "@/content/site";
+import { getProducts, getSite } from "@/content";
+import { isLocale, locales } from "@/i18n/config";
+import { Link } from "@/i18n/Link";
+import { messages } from "@/i18n/messages";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ locale: string; slug: string }> };
 
 const tel = (s: string) => `tel:${s.replace(/[^\d+]/g, "")}`;
 const order = (i: number) => ({ "--i": i }) as CSSProperties;
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+  return locales.flatMap((locale) => getProducts(locale).products.map((p) => ({ locale, slug: p.slug })));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = getProduct((await params).slug);
+  const { locale, slug } = await params;
+  if (!isLocale(locale)) return {};
+  const product = getProducts(locale).getProduct(slug);
   if (!product) return {};
   return { title: product.name, description: product.tagline };
 }
 
 export default async function ProductPage({ params }: Props) {
-  const product = getProduct((await params).slug);
+  const { locale, slug } = await params;
+  if (!isLocale(locale)) notFound();
+  const m = messages[locale];
+  const d = m.detail;
+  const { categoryLabel, categories, getProduct, products, relatedProducts } = getProducts(locale);
+  const { cabinNote, cabins, company, wellFrames } = getSite(locale);
+  const product = getProduct(slug);
   if (!product) notFound();
 
   const at = products.indexOf(product);
@@ -41,12 +50,12 @@ export default async function ProductPage({ params }: Props) {
         <section className="pdetail">
           <div className="phero__glow" aria-hidden="true" />
           <div className="wrap">
-            <nav className="crumbs label" aria-label="Breadcrumb">
-              <Link href="/">Trang chủ</Link>
+            <nav className="crumbs label" aria-label={d.crumbsLabel}>
+              <Link href="/">{m.common.home}</Link>
               <span aria-hidden="true">/</span>
-              <Link href="/san-pham">Sản phẩm</Link>
+              <Link href="/products">{m.common.products}</Link>
               <span aria-hidden="true">/</span>
-              <Link href={`/san-pham?loai=${product.category}#danh-sach`}>{categoryLabel(product.category)}</Link>
+              <Link href={`/products?loai=${product.category}#danh-sach`}>{categoryLabel(product.category)}</Link>
             </nav>
 
             <div className="pdetail__grid">
@@ -56,7 +65,7 @@ export default async function ProductPage({ params }: Props) {
 
               <div className="pdetail__info">
                 <span className="label label--gold rule enter" style={order(1)}>
-                  {pad(at + 1)} · {product.nameEn}
+                  {pad(at + 1)} · {product.altName}
                 </span>
                 <h1 className="pdetail__title">
                   <span className="mask">
@@ -76,7 +85,7 @@ export default async function ProductPage({ params }: Props) {
                 </dl>
                 {product.doors && (
                   <div className="enter" style={order(5)}>
-                    <p className="label">Phương thức mở cửa</p>
+                    <p className="label">{m.common.doorTypes}</p>
                     <ul className="tags">
                       {product.doors.map((d) => (
                         <li key={d}>{d}</li>
@@ -86,14 +95,14 @@ export default async function ProductPage({ params }: Props) {
                 )}
                 <div className="hero__actions enter" style={order(6)}>
                   <a className="btn btn--solid" href={tel(company.hotline)}>
-                    Nhận báo giá <span aria-hidden="true">→</span>
+                    {d.getQuote} <span aria-hidden="true">→</span>
                   </a>
                   <a className="btn btn--ghost" href={company.zalo} target="_blank" rel="noopener noreferrer">
-                    Tư vấn qua Zalo
+                    {d.zalo}
                   </a>
                 </div>
                 <p className="pdetail__note enter" style={order(7)}>
-                  Thông số mang tính tham khảo. Mỗi công trình được khảo sát và thiết kế cấu hình riêng.
+                  {d.note}
                 </p>
               </div>
             </div>
@@ -105,10 +114,10 @@ export default async function ProductPage({ params }: Props) {
             <div className="wrap">
               <header className="section__head" data-reveal>
                 <div>
-                  <span className="label label--gold rule">Thực tế tăng cường</span>
-                  <h2>Xem thang máy trong không gian của bạn</h2>
+                  <span className="label label--gold rule">{d.arLabel}</span>
+                  <h2>{d.arTitle}</h2>
                 </div>
-                <p className="muted">Xoay mô hình 3D, hoặc dùng camera điện thoại để đặt thang máy vào đúng kích thước thật.</p>
+                <p className="muted">{d.arText}</p>
               </header>
               <ProductAR src={product.ar.glb} alt={product.ar.alt} />
             </div>
@@ -118,15 +127,15 @@ export default async function ProductPage({ params }: Props) {
         <section className="section section--low">
           <div className="wrap split split--top">
             <div className="split__text" data-reveal="cascade">
-              <span className="label label--gold rule">Tổng quan</span>
-              <h2>Giới thiệu sản phẩm</h2>
+              <span className="label label--gold rule">{d.overviewLabel}</span>
+              <h2>{d.overviewTitle}</h2>
               {product.summary.filter(Boolean).map((p) => (
                 <p key={p} className="muted pdetail__summary">
                   {p}
                 </p>
               ))}
               <div>
-                <p className="label">Phù hợp cho</p>
+                <p className="label">{d.suitableFor}</p>
                 <ul className="tags">
                   {product.applications.map((a) => (
                     <li key={a}>{a}</li>
@@ -149,10 +158,10 @@ export default async function ProductPage({ params }: Props) {
           <div className="wrap">
             <header className="section__head" data-reveal>
               <div>
-                <span className="label label--gold rule">Thông số</span>
-                <h2>Thông số kỹ thuật</h2>
+                <span className="label label--gold rule">{d.specsLabel}</span>
+                <h2>{d.specsTitle}</h2>
               </div>
-              <p className="muted">Có thể thay đổi theo kích thước giếng thang và yêu cầu của công trình.</p>
+              <p className="muted">{d.specsNote}</p>
             </header>
             <dl className="spectable" data-reveal="stagger">
               {product.specs.map((s, i) => (
@@ -170,10 +179,10 @@ export default async function ProductPage({ params }: Props) {
             <div className="wrap">
               <header className="section__head" data-reveal>
                 <div>
-                  <span className="label label--gold rule">Hoàn thiện</span>
-                  <h2>Màu khung giếng thang</h2>
+                  <span className="label label--gold rule">{d.finishLabel}</span>
+                  <h2>{d.finishTitle}</h2>
                 </div>
-                <p className="muted">Khung kim loại sơn phủ cao cấp, đồng bộ với nội thất.</p>
+                <p className="muted">{d.finishNote}</p>
               </header>
               <ul className="finishes" data-reveal="stagger">
                 {wellFrames.colors.map((c, i) => (
@@ -192,8 +201,8 @@ export default async function ProductPage({ params }: Props) {
             <div className="wrap">
               <header className="section__head" data-reveal>
                 <div>
-                  <span className="label label--gold rule">Cabin</span>
-                  <h2>Phong cách nội thất cabin</h2>
+                  <span className="label label--gold rule">{d.cabinsLabel}</span>
+                  <h2>{d.cabinsTitle}</h2>
                 </div>
                 <p className="muted">{cabinNote}</p>
               </header>
@@ -201,7 +210,7 @@ export default async function ProductPage({ params }: Props) {
                 {cabins.map((c, i) => (
                   <li key={c.code} className="card" style={order(i)} data-spotlight>
                     <div className="card__photo card__photo--tall">
-                      <Image src={c.image} alt={`Cabin ${c.code} — ${c.name}`} width={500} height={900} sizes="(max-width: 760px) 50vw, 16vw" />
+                      <Image src={c.image} alt={m.home.cabinAlt(c.code, c.name)} width={500} height={900} sizes="(max-width: 760px) 50vw, 16vw" />
                       <span className="chip chip--tl">{c.code}</span>
                     </div>
                     <div className="card__body">
@@ -219,26 +228,32 @@ export default async function ProductPage({ params }: Props) {
           <div className="wrap">
             <header className="section__head" data-reveal>
               <div>
-                <span className="label label--gold rule">Khám phá thêm</span>
-                <h2>Sản phẩm liên quan</h2>
+                <span className="label label--gold rule">{d.moreLabel}</span>
+                <h2>{d.relatedTitle}</h2>
               </div>
-              <Link className="arrow-link" href="/san-pham">
-                Tất cả sản phẩm <span aria-hidden="true">→</span>
+              <Link className="arrow-link" href="/products">
+                {d.allProducts} <span aria-hidden="true">→</span>
               </Link>
             </header>
             <div className="pgrid" data-reveal="stagger">
               {relatedProducts(product).map((p, i) => (
-                <ProductCard key={p.slug} product={p} index={products.indexOf(p)} style={order(i)} />
+                <ProductCard
+                  key={p.slug}
+                  product={p}
+                  index={products.indexOf(p)}
+                  categoryLabel={categoryLabel(p.category)}
+                  style={order(i)}
+                />
               ))}
             </div>
 
-            <nav className="pager" aria-label="Sản phẩm trước và sau">
-              <Link href={`/san-pham/${prev.slug}`} className="pager__link" data-spotlight>
-                <span className="label">← Sản phẩm trước</span>
+            <nav className="pager" aria-label={d.pagerLabel}>
+              <Link href={`/products/${prev.slug}`} className="pager__link" data-spotlight>
+                <span className="label">← {m.common.previousProduct}</span>
                 <span className="pager__name">{prev.name}</span>
               </Link>
-              <Link href={`/san-pham/${next.slug}`} className="pager__link pager__link--next" data-spotlight>
-                <span className="label">Sản phẩm tiếp theo →</span>
+              <Link href={`/products/${next.slug}`} className="pager__link pager__link--next" data-spotlight>
+                <span className="label">{m.common.nextProduct} →</span>
                 <span className="pager__name">{next.name}</span>
               </Link>
             </nav>

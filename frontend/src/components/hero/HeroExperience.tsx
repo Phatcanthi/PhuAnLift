@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { company, hero, technology } from "@/content/site";
+import { useMessages } from "@/i18n/LocaleProvider";
 import { finishes } from "./cabinStyles";
 import { createSceneState, INSIDE_THRESHOLD } from "./sceneState";
 
@@ -13,15 +13,22 @@ const ElevatorCanvas = dynamic(() => import("./ElevatorCanvas"), { ssr: false })
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
-// Stops along the camera path. The captions reuse the catalogue's technology items, each shown where it
-// fits the shot (the door technology while the doors open, the quiet drive while stepping in).
-const chapters = [
-  { at: 0, label: "Sảnh" },
-  { at: 0.22, label: "Kiến trúc", item: technology.items[0] },
-  { at: 0.42, label: "Cửa tầng", item: technology.items[2] },
-  { at: 0.62, label: "Bước vào", item: technology.items[1] },
-  { at: INSIDE_THRESHOLD, label: "Cabin" },
+// Stops along the camera path; the labels come from the scene messages, in this order. The captions reuse the
+// catalogue's technology items (`tech` is the index), each shown where it fits the shot (the door technology
+// while the doors open, the quiet drive while stepping in).
+const stops: { at: number; tech?: number }[] = [
+  { at: 0 },
+  { at: 0.22, tech: 0 },
+  { at: 0.42, tech: 2 },
+  { at: 0.62, tech: 1 },
+  { at: INSIDE_THRESHOLD },
 ];
+
+export type SceneContent = {
+  brand: string;
+  hero: { badge: string; title: string[]; accent: string; lead: string };
+  technology: { title: string; text: string }[];
+};
 /** The loader stays up at least this long so it never just flashes. */
 const MIN_LOADER_MS = 1400;
 
@@ -39,7 +46,7 @@ function canUseWebGL() {
  * that was rendered on the server (also used for search engines and reduced-motion users).
  * The link `/#cabin` opens the page already inside the cabin.
  */
-export function HeroExperience({ fallback }: { fallback: ReactNode }) {
+export function HeroExperience({ fallback, content }: { fallback: ReactNode; content: SceneContent }) {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -48,10 +55,16 @@ export function HeroExperience({ fallback }: { fallback: ReactNode }) {
     if (!reduceMotion && !saveData && canUseWebGL()) setEnabled(true);
   }, []);
 
-  return enabled ? <ScrollScene onFail={() => setEnabled(false)} /> : <>{fallback}</>;
+  return enabled ? <ScrollScene content={content} onFail={() => setEnabled(false)} /> : <>{fallback}</>;
 }
 
-function ScrollScene({ onFail }: { onFail: () => void }) {
+function ScrollScene({ content, onFail }: { content: SceneContent; onFail: () => void }) {
+  const { scene: m, home, common } = useMessages();
+  const { hero } = content;
+  const chapters = useMemo(
+    () => stops.map((c, i) => ({ at: c.at, label: m.chapters[i], item: c.tech === undefined ? undefined : content.technology[c.tech] })),
+    [m, content.technology],
+  );
   const stateRef = useRef(createSceneState());
   const sectionRef = useRef<HTMLElement>(null);
   const introRef = useRef<HTMLDivElement>(null);
@@ -115,7 +128,7 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
       s.pitchTarget = 0;
       setDoorOpen(true);
     }
-  }, []);
+  }, [chapters]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -220,7 +233,7 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
   const current = finishes[finishIndex];
 
   return (
-    <section id="top" ref={sectionRef} className="scene" aria-label="Cảnh 3D thang máy">
+    <section id="top" ref={sectionRef} className="scene" aria-label={m.ariaLabel}>
       <div
         className={`scene__sticky${inside ? " is-inside" : ""}${ready ? " is-ready" : ""}${revealed ? " is-revealed" : ""}`}
         onPointerDown={onPointerDown}
@@ -244,7 +257,7 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
 
         <div ref={introRef} className="scene__intro wrap">
           <div className="scene__brandrow rv" style={order(0)}>
-            <Image src="/images/catalogue/elite-logo.png" alt={company.brand} width={172} height={172} className="hero__brand" priority />
+            <Image src="/images/catalogue/elite-logo.png" alt={content.brand} width={172} height={172} className="hero__brand" priority />
             <span className="badge">
               <i aria-hidden="true" />
               {hero.badge}
@@ -267,10 +280,10 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
             </p>
             <div className="hero__actions rv" style={order(5)}>
               <a className="btn btn--solid" href="#products">
-                <span>Khám phá sản phẩm</span> <span aria-hidden="true">→</span>
+                <span>{home.exploreProducts}</span> <span aria-hidden="true">→</span>
               </a>
               <a className="btn btn--ghost" href="#contact">
-                <span>Đặt lịch khảo sát</span>
+                <span>{common.bookSurvey}</span>
               </a>
             </div>
           </div>
@@ -292,7 +305,7 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
           )}
         </div>
 
-        <nav ref={railRef} className="scene__rail" aria-label="Các chặng của cảnh 3D">
+        <nav ref={railRef} className="scene__rail" aria-label={m.chaptersNav}>
           <span className="scene__railtrack" aria-hidden="true">
             <i ref={railFillRef} />
           </span>
@@ -317,20 +330,20 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
           <span className="scene__mouse">
             <i />
           </span>
-          <span className="label">Cuộn để bước vào thang máy</span>
+          <span className="label">{m.scrollHint}</span>
         </div>
 
         <div className={`scene__panel${inside ? " is-on" : ""}`} aria-hidden={!inside}>
           <div className="scene__panelhead">
             <div>
-              <span className="label label--gold">Hoàn thiện vách cabin</span>
-              <h2>{current.name}</h2>
+              <span className="label label--gold">{m.finishLabel}</span>
+              <h2>{m.finishes[current.code]}</h2>
             </div>
             <button type="button" className="btn btn--outline" onClick={toggleDoor} tabIndex={inside ? 0 : -1}>
-              {doorOpen ? "Đóng cửa" : "Mở cửa"}
+              {doorOpen ? m.closeDoor : m.openDoor}
             </button>
           </div>
-          <ul className="scene__styles" aria-label="Chọn màu hoàn thiện">
+          <ul className="scene__styles" aria-label={m.chooseFinish}>
             {finishes.map((f, i) => (
               <li key={f.code}>
                 <button
@@ -341,18 +354,18 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
                   tabIndex={inside ? 0 : -1}
                 >
                   <span className="scene__swatch" style={{ background: f.swatch }} aria-hidden="true" />
-                  <span className="label">{f.name}</span>
+                  <span className="label">{m.finishes[f.code]}</span>
                 </button>
               </li>
             ))}
           </ul>
           <p className="scene__note">
-            Kéo chuột (hoặc vuốt ngang) để nhìn quanh. Màu chỉ mang tính minh họa; các mẫu họa tiết xem ở phần Cabin bên dưới.
+            {m.note}
           </p>
         </div>
 
         <a className="scene__skip label" href="#about">
-          Bỏ qua cảnh 3D
+          {m.skip}
         </a>
 
         <div className="loader" aria-hidden="true">
@@ -365,7 +378,7 @@ function ScrollScene({ onFail }: { onFail: () => void }) {
             <span className="loader__bar">
               <i ref={barRef} />
             </span>
-            <span className="label">Đang chuẩn bị không gian</span>
+            <span className="label">{m.loading}</span>
           </div>
         </div>
       </div>

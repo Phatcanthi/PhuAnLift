@@ -1,6 +1,6 @@
 """
 Bake the room's lighting (shadows, bounce light) and procedural textures into one lightmap
-atlas, then export the web model (frontend/public/models/thang-may-room.glb).
+atlas, then export the web model (frontend/public/models/room.glb).
 
 Why: glTF cannot carry Blender's procedural node textures or Cycles' global illumination, so
 an export without baking shows flat single-colour surfaces on the website. After baking, every
@@ -32,8 +32,8 @@ import numpy as np
 
 # ---------------------------------------------------------------- settings
 SETTINGS = {
-    # Where the web model goes. The website loads /models/thang-may-room.glb.
-    "OUTPUT_GLB": r"D:\WorkSpace\PhuAnLift\WebApp\frontend\public\models\thang-may-room.glb",
+    # Where the web model goes. The website loads /models/room.glb.
+    "OUTPUT_GLB": r"D:\WorkSpace\PhuAnLift\WebApp\frontend\public\models\room.glb",
     # Lightmap atlas size in pixels. 4096 is a good web trade-off (about 7 mm per pixel for this
     # room); 8192 is sharper but makes the download and GPU memory four times larger.
     "ATLAS_SIZE": 4096,

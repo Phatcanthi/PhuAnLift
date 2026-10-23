@@ -3,8 +3,8 @@
 // an illustration of the colour, not of the etched/patterned designs (V06, V08 ...).
 
 export interface Finish {
+  /** Key of the translated name in the scene messages. */
   code: string;
-  name: string;
   /** sRGB colour used for the swatch. */
   swatch: string;
   /** Tint applied to the model's brushed-steel material, or null to keep the original. */
@@ -12,8 +12,8 @@ export interface Finish {
 }
 
 export const finishes: Finish[] = [
-  { code: "inox", name: "Inox xước", swatch: "#cfcfd2", wall: null },
-  { code: "rose", name: "Vàng hồng", swatch: "#c58f7e", wall: "#c58f7e" },
-  { code: "bronze", name: "Đồng", swatch: "#a07a50", wall: "#a07a50" },
-  { code: "champagne", name: "Vàng champagne", swatch: "#d8c39a", wall: "#d8c39a" },
+  { code: "inox", swatch: "#cfcfd2", wall: null },
+  { code: "rose", swatch: "#c58f7e", wall: "#c58f7e" },
+  { code: "bronze", swatch: "#a07a50", wall: "#a07a50" },
+  { code: "champagne", swatch: "#d8c39a", wall: "#d8c39a" },
 ];

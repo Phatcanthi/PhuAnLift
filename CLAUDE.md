@@ -40,6 +40,8 @@ Backend layering (`backend/src`): `Api` → `Application` + `Infrastructure`; `A
 
 Frontend: `frontend/src/app` (App Router). API base URL comes from `NEXT_PUBLIC_API_BASE_URL` (copy `.env.example` to `.env.local`).
 
+Languages (Vietnamese default, English): no i18n library. All pages live under `src/app/[locale]`; `src/middleware.ts` serves Vietnamese without a prefix (rewrites `/x` to `/vi/x`, redirects `/vi/x` to `/x`) and English under `/en`. UI strings are in `src/i18n/messages.ts` (`en` is typed against `vi`); catalogue content is in `src/content/vi` and `src/content/en` and must keep the same shape (`src/content/index.ts` fails the build otherwise); company facts shared by both are in `src/content/company.ts`. Write internal links without a locale and use `Link` from `@/i18n/Link`, which adds the prefix. Product slugs and the `?loai=` filter are the same in every language. New text goes in both languages.
+
 ## Dependency notes
 
 `next` is pinned to an exact patched version and `package.json` has a `postcss` override because earlier versions failed `npm audit`. Run `npm audit` after changing frontend dependencies.

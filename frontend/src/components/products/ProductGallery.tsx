@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { useMessages } from "@/i18n/LocaleProvider";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -12,6 +13,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * full-screen viewer (rendered into <body> so no transformed ancestor can trap it).
  */
 export function ProductGallery({ images, alt }: { images: string[]; alt: string }) {
+  const m = useMessages().gallery;
   const [index, setIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
   const swipe = useRef<number | null>(null);
@@ -66,7 +68,7 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             draggable={false}
           />
         ))}
-        <button ref={opener} type="button" className="gallery__zoom" onClick={() => setZoom(true)} aria-label="Xem ảnh toàn màn hình">
+        <button ref={opener} type="button" className="gallery__zoom" onClick={() => setZoom(true)} aria-label={m.fullscreen}>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" strokeWidth="1.4" />
           </svg>
@@ -76,10 +78,10 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
             <span className="label">
               <b>{pad(index + 1)}</b> / {pad(count)}
             </span>
-            <button type="button" className="iconbtn" onClick={() => go(-1)} aria-label="Ảnh trước">
+            <button type="button" className="iconbtn" onClick={() => go(-1)} aria-label={m.prev}>
               ←
             </button>
-            <button type="button" className="iconbtn" onClick={() => go(1)} aria-label="Ảnh tiếp theo">
+            <button type="button" className="iconbtn" onClick={() => go(1)} aria-label={m.next}>
               →
             </button>
           </div>
@@ -87,14 +89,14 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
       </div>
 
       {count > 1 && (
-        <ul className="gallery__thumbs" aria-label="Chọn ảnh">
+        <ul className="gallery__thumbs" aria-label={m.choose}>
           {images.map((src, i) => (
             <li key={src + i}>
               <button
                 type="button"
                 className={i === index ? "is-active" : undefined}
                 onClick={() => setIndex(i)}
-                aria-label={`Ảnh ${i + 1}`}
+                aria-label={m.imageN(i + 1)}
                 aria-current={i === index}
               >
                 <Image src={src} alt="" width={160} height={192} sizes="96px" />
@@ -116,15 +118,15 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
               </span>
               {count > 1 && (
                 <>
-                  <button type="button" className="iconbtn" onClick={() => go(-1)} aria-label="Ảnh trước">
+                  <button type="button" className="iconbtn" onClick={() => go(-1)} aria-label={m.prev}>
                     ←
                   </button>
-                  <button type="button" className="iconbtn" onClick={() => go(1)} aria-label="Ảnh tiếp theo">
+                  <button type="button" className="iconbtn" onClick={() => go(1)} aria-label={m.next}>
                     →
                   </button>
                 </>
               )}
-              <button ref={closer} type="button" className="iconbtn" onClick={() => setZoom(false)} aria-label="Đóng">
+              <button ref={closer} type="button" className="iconbtn" onClick={() => setZoom(false)} aria-label={m.close}>
                 ✕
               </button>
             </div>

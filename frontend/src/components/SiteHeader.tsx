@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { company, navItems } from "@/content/site";
+import { usePathname, useRouter } from "next/navigation";
+import { defaultLocale, localizedPath, locales, stripLocale } from "@/i18n/config";
+import { Link } from "@/i18n/Link";
+import { useLocale, useMessages } from "@/i18n/LocaleProvider";
+
+type NavItem = { label: string; href: string; section: string };
 
 const tel = (s: string) => `tel:${s.replace(/[^\d+]/g, "")}`;
 
@@ -14,8 +17,20 @@ const tel = (s: string) => `tel:${s.replace(/[^\d+]/g, "")}`;
  * slides away while scrolling down and returns on the way up. Small screens get a full-screen menu.
  * On the home page the link of the section in view is highlighted; elsewhere the link matching the route.
  */
-export function SiteHeader() {
-  const pathname = usePathname();
+export function SiteHeader({ navItems, hotline, name }: { navItems: NavItem[]; hotline: string; name: string }) {
+  const locale = useLocale();
+  const m = useMessages().header;
+  const router = useRouter();
+  const rawPath = usePathname();
+  // routes are written without a locale prefix, so compare against the path with it removed
+  const pathname = stripLocale(rawPath);
+  const other = locales.find((l) => l !== locale) ?? defaultLocale;
+  const switchHref = localizedPath(other, pathname);
+  // keep the query string and anchor (e.g. the product filter) when switching language
+  const switchLocale = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    router.push(switchHref + window.location.search + window.location.hash);
+  };
   const [solid, setSolid] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
@@ -43,7 +58,7 @@ export function SiteHeader() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [pathname]);
+  }, [pathname, navItems]);
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -55,20 +70,20 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const isActive = (n: (typeof navItems)[number]) =>
+  const isActive = (n: NavItem) =>
     pathname === "/" ? spy === n.section : n.href !== "/" && !n.href.startsWith("/#") && pathname.startsWith(n.href);
 
   return (
     <header className={`nav${solid ? " is-solid" : ""}${hidden && !open ? " is-hidden" : ""}${open ? " is-open" : ""}`}>
       <div className="nav__inner">
-        <Link href="/" className="brand" aria-label={company.name} onClick={() => setOpen(false)}>
+        <Link href="/" className="brand" aria-label={name} onClick={() => setOpen(false)}>
           <Image src="/images/logo.png" alt="" width={236} height={180} priority className="brand__logo" />
           <span className="brand__text">
-            <span className="brand__name">Thang máy</span>
-            <span className="label label--gold">Phú An</span>
+            <span className="brand__name">{m.brandTop}</span>
+            <span className="label label--gold">{m.brandBottom}</span>
           </span>
         </Link>
-        <nav className="nav__links" aria-label="Điều hướng chính">
+        <nav className="nav__links" aria-label={m.mainNav}>
           {navItems.map((n) => (
             <Link
               key={n.href}
@@ -80,15 +95,25 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <a className="btn btn--outline nav__cta" href={tel(company.hotline)}>
-          Gọi {company.hotline}
+        <a className="btn btn--outline nav__cta" href={tel(hotline)}>
+          {m.call(hotline)}
+        </a>
+        <a
+          className="nav__lang label"
+          href={switchHref}
+          hrefLang={other}
+          lang={other}
+          aria-label={m.switchAria}
+          onClick={switchLocale}
+        >
+          {m.switchLabel}
         </a>
         <button
           type="button"
           className="nav__toggle"
           aria-expanded={open}
           aria-controls="mobile-menu"
-          aria-label={open ? "Đóng menu" : "Mở menu"}
+          aria-label={open ? m.closeMenu : m.openMenu}
           onClick={() => setOpen((v) => !v)}
         >
           <i />
@@ -97,7 +122,7 @@ export function SiteHeader() {
       </div>
 
       <div id="mobile-menu" className="menu" hidden={!open}>
-        <nav aria-label="Điều hướng (di động)">
+        <nav aria-label={m.mobileNav}>
           {navItems.map((n, i) => (
             <Link key={n.href} href={n.href} onClick={() => setOpen(false)} style={{ "--i": i } as CSSProperties}>
               <span className="menu__num">{String(i + 1).padStart(2, "0")}</span>
@@ -105,8 +130,11 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <a className="btn btn--solid" href={tel(company.hotline)}>
-          Gọi {company.hotline}
+        <a className="btn btn--solid" href={tel(hotline)}>
+          {m.call(hotline)}
+        </a>
+        <a className="nav__lang label" href={switchHref} hrefLang={other} lang={other} aria-label={m.switchAria} onClick={switchLocale}>
+          {m.switchLabel}
         </a>
       </div>
     </header>

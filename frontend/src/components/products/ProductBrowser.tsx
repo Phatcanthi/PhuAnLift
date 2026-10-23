@@ -3,9 +3,11 @@
 import { Suspense, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useSearchParams } from "next/navigation";
-import { categories, type CategoryId, type Product } from "@/content/products";
+import type { CategoryId, Product } from "@/content";
+import { useMessages } from "@/i18n/LocaleProvider";
 import { ProductCard } from "./ProductCard";
 
+type Category = { id: CategoryId; label: string };
 type Filter = CategoryId | "all";
 
 const normalize = (s: string) =>
@@ -21,21 +23,22 @@ const normalize = (s: string) =>
  * in `?loai=`, so it can be linked to (also from this page) and survives a reload. The prerendered HTML shows
  * every product; the URL is applied once the page is running in the browser.
  */
-export function ProductBrowser({ products }: { products: Product[] }) {
+export function ProductBrowser({ products, categories }: { products: Product[]; categories: Category[] }) {
   return (
-    <Suspense fallback={<Browser products={products} filter="all" />}>
-      <BrowserFromUrl products={products} />
+    <Suspense fallback={<Browser products={products} categories={categories} filter="all" />}>
+      <BrowserFromUrl products={products} categories={categories} />
     </Suspense>
   );
 }
 
-function BrowserFromUrl({ products }: { products: Product[] }) {
+function BrowserFromUrl({ products, categories }: { products: Product[]; categories: Category[] }) {
   const loai = useSearchParams().get("loai");
   const filter = categories.some((c) => c.id === loai) ? (loai as CategoryId) : "all";
-  return <Browser products={products} filter={filter} />;
+  return <Browser products={products} categories={categories} filter={filter} />;
 }
 
-function Browser({ products, filter }: { products: Product[]; filter: Filter }) {
+function Browser({ products, categories, filter }: { products: Product[]; categories: Category[]; filter: Filter }) {
+  const m = useMessages().browser;
   const [query, setQuery] = useState("");
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -69,19 +72,19 @@ function Browser({ products, filter }: { products: Product[]; filter: Filter }) 
     return products.filter(
       (p) =>
         (filter === "all" || p.category === filter) &&
-        (!q || normalize(`${p.name} ${p.nameEn} ${p.tagline} ${p.applications.join(" ")}`).includes(q)),
+        (!q || normalize(`${p.name} ${p.altName} ${p.tagline} ${p.applications.join(" ")}`).includes(q)),
     );
   }, [products, filter, query]);
 
   const tabs: { id: Filter; label: string; count: number }[] = [
-    { id: "all", label: "Tất cả", count: products.length },
+    { id: "all", label: m.all, count: products.length },
     ...categories.map((c) => ({ id: c.id, label: c.label, count: products.filter((p) => p.category === c.id).length })),
   ];
 
   return (
     <>
       <div className="browser__bar">
-        <div ref={tabsRef} className="tabs" role="tablist" aria-label="Danh mục sản phẩm">
+        <div ref={tabsRef} className="tabs" role="tablist" aria-label={m.tabsLabel}>
           <span className="tabs__indicator" aria-hidden="true" />
           {tabs.map((t) => (
             <button
@@ -102,13 +105,13 @@ function Browser({ products, filter }: { products: Product[]; filter: Filter }) 
             <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="1.4" />
             <path d="m20 20-4-4" stroke="currentColor" strokeWidth="1.4" />
           </svg>
-          <span className="sr-only">Tìm sản phẩm</span>
-          <input type="search" placeholder="Tìm theo tên, công trình…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <span className="sr-only">{m.searchLabel}</span>
+          <input type="search" placeholder={m.searchPlaceholder} value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
 
       <p className="browser__count label" aria-live="polite">
-        Hiển thị {shown.length} / {products.length} sản phẩm
+        {m.count(shown.length, products.length)}
       </p>
 
       {shown.length > 0 ? (
@@ -119,14 +122,15 @@ function Browser({ products, filter }: { products: Product[]; filter: Filter }) 
               key={p.slug}
               product={p}
               index={products.indexOf(p)}
+              categoryLabel={categories.find((c) => c.id === p.category)?.label ?? ""}
               style={{ "--i": Math.min(i, 8) } as CSSProperties}
             />
           ))}
         </div>
       ) : (
         <div className="empty">
-          <h3>Không tìm thấy sản phẩm phù hợp</h3>
-          <p className="muted">Thử từ khóa khác, hoặc liên hệ để được tư vấn giải pháp riêng cho công trình của bạn.</p>
+          <h3>{m.emptyTitle}</h3>
+          <p className="muted">{m.emptyText}</p>
           <button
             type="button"
             className="btn btn--ghost"
@@ -135,7 +139,7 @@ function Browser({ products, filter }: { products: Product[]; filter: Filter }) 
               choose("all");
             }}
           >
-            Xem tất cả sản phẩm
+            {m.showAll}
           </button>
         </div>
       )}

@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Product } from "@/content/products";
+import type { Product } from "@/content";
+import { useMessages } from "@/i18n/LocaleProvider";
 import { ProductCard } from "./ProductCard";
 
 /** Horizontally scrolling row of product cards with arrow buttons, drag-to-scroll and a progress line. */
-export function ProductRail({ products }: { products: Product[] }) {
+export function ProductRail({ products, categories }: { products: Product[]; categories: { id: string; label: string }[] }) {
+  const m = useMessages().rail;
   const trackRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLSpanElement>(null);
   const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
@@ -72,7 +74,13 @@ export function ProductRail({ products }: { products: Product[] }) {
         }}
       >
         {products.map((p, i) => (
-          <ProductCard key={p.slug} product={p} index={i} sizes="(max-width: 640px) 80vw, 360px" />
+          <ProductCard
+            key={p.slug}
+            product={p}
+            index={i}
+            categoryLabel={categories.find((c) => c.id === p.category)?.label ?? ""}
+            sizes="(max-width: 640px) 80vw, 360px"
+          />
         ))}
       </div>
       <div className="rail__foot">
@@ -80,10 +88,10 @@ export function ProductRail({ products }: { products: Product[] }) {
           <span ref={fillRef} />
         </span>
         <div className="rail__arrows">
-          <button type="button" className="iconbtn" onClick={() => step(-1)} disabled={edges.start} aria-label="Sản phẩm trước">
+          <button type="button" className="iconbtn" onClick={() => step(-1)} disabled={edges.start} aria-label={m.prev}>
             ←
           </button>
-          <button type="button" className="iconbtn" onClick={() => step(1)} disabled={edges.end} aria-label="Sản phẩm tiếp theo">
+          <button type="button" className="iconbtn" onClick={() => step(1)} disabled={edges.end} aria-label={m.next}>
             →
           </button>
         </div>

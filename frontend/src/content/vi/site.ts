@@ -3,32 +3,25 @@
 // projects, technical specs) that those sources do not state.
 // Images live in public/images/catalogue (cropped from the catalogue) and public/images/logo.png.
 
+import { companyShared } from "../company";
+
 const IMG = "/images/catalogue";
 
 export const company = {
+  ...companyShared,
   name: "Thang máy Phú An",
   legalName: "Công ty Cổ phần Thang máy Phú An",
-  legalNameEn: "Phu An Elevator Joint Stock Company",
-  brand: "ELITE Elevators",
   slogan: "Phú An luôn luôn sẵn sàng phục vụ quý khách hàng",
-  taxCode: "0309509480",
   address: "Số 6 đường số 1, Phường Bình Hưng Hòa, Thành phố Hồ Chí Minh",
-  /** Query that Google Maps resolves to the right pin (the displayed `address` wording points elsewhere). */
-  mapQuery: "6 Đ. số 1, Bình Hưng Hòa, Hồ Chí Minh, Vietnam",
-  phone: "(028) 6273 9239",
-  hotline: "0907 702 512",
-  email: "nvquang2512@gmail.com",
-  zalo: "https://zalo.me/0907702512",
-  facebook: "https://www.facebook.com/phuanlift",
-  website: "https://www.phuanlift.com",
 };
 
 /** `section` is the id on the home page that marks the link active while it is on screen. */
 export const navItems = [
   { label: "Giới thiệu", href: "/#about", section: "about" },
   { label: "Công nghệ", href: "/#technology", section: "technology" },
-  { label: "Sản phẩm", href: "/san-pham", section: "products" },
+  { label: "Sản phẩm", href: "/products", section: "products" },
   { label: "Cabin", href: "/#cabins", section: "cabins" },
+  { label: "Dự án", href: "/projects", section: "projects" },
   { label: "Dịch vụ", href: "/#services", section: "services" },
   { label: "Liên hệ", href: "/#contact", section: "contact" },
 ];
@@ -208,7 +201,7 @@ export const cabins = [
   },
 ];
 
-export const cabinNote =
+export const cabinNote: string =
   "Sàn cabin: sàn đá tiêu chuẩn, tùy chọn PVC hoặc đá marble. Ngoài các mẫu trên, catalogue còn có V03 (vách sau cabin đá vân), V07, V09 (Champagne sang trọng), V10 (Không gian khoáng đạt) và V11 (Phong thái thanh lịch).";
 
 export const services = {
