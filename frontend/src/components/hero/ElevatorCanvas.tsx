@@ -15,10 +15,10 @@ import { finishes } from "./cabinStyles";
 import { INSIDE_THRESHOLD } from "./sceneState";
 import type { SceneState } from "./sceneState";
 
-// Units are metres. The room model (public/models/thang-may-room.glb) is a living room with the lift in its
+// Units are metres. The room model (public/models/room.glb) is a living room with the lift in its
 // lobby wall: the wall's front face is at z = 1.12, the doorway is centred on x = 0 (0.9 m wide, 2.1 m high)
 // and the cabin spans z = -0.8 .. 0.8 behind it. The room itself runs from x = -3.5 to 8 and z = -4.2 to 7.5.
-const MODEL_URL = "/models/thang-may-room.glb";
+const MODEL_URL = "/models/room.glb";
 // The car doors are exported open (hidden inside the wall); each panel slides 0.45 m to close. Stop 2 mm
 // short so the two panels never share a face.
 const DOOR_SLIDE = 0.448;

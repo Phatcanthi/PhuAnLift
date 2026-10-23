@@ -1,23 +1,14 @@
 import Image from "next/image";
-import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { CSSProperties } from "react";
 import { CompanyMap } from "@/components/CompanyMap";
 import { HeroExperience } from "@/components/hero/HeroExperience";
 import { ProductRail } from "@/components/products/ProductRail";
 import { RevealObserver } from "@/components/RevealObserver";
-import { products } from "@/content/products";
-import {
-  about,
-  cabinNote,
-  cabins,
-  company,
-  hero,
-  productLines,
-  services,
-  stats,
-  technology,
-  wellFrames,
-} from "@/content/site";
+import { getProducts, getSite } from "@/content";
+import { isLocale } from "@/i18n/config";
+import { Link } from "@/i18n/Link";
+import { messages } from "@/i18n/messages";
 
 const tel = (s: string) => `tel:${s.replace(/[^\d+]/g, "")}`;
 /** Stagger index for `data-reveal` children (read by the CSS as a transition delay). */
@@ -60,7 +51,14 @@ function TechIcon({ name }: { name: string }) {
   }
 }
 
-export default function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const m = messages[locale].home;
+  const common = messages[locale].common;
+  const { about, cabinNote, cabins, company, hero, productLines, services, stats, technology, wellFrames } = getSite(locale);
+  const { products, categories } = getProducts(locale);
+
   const staticHero = (
     <section id="top" className="hero">
       <div className="hero__glow" aria-hidden="true" />
@@ -87,15 +85,15 @@ export default function HomePage() {
           <p className="lead">{hero.lead}</p>
           <div className="hero__actions">
             <a className="btn btn--solid" href="#products">
-              Khám phá sản phẩm <span aria-hidden="true">→</span>
+              {m.exploreProducts} <span aria-hidden="true">→</span>
             </a>
             <a className="btn btn--ghost" href="#contact">
-              Đặt lịch khảo sát
+              {common.bookSurvey}
             </a>
           </div>
         </div>
         <div className="hero__photo">
-          <Image src={hero.image} alt="Thang máy tròn ELITE trong không gian biệt thự" width={1024} height={1024} priority />
+          <Image src={hero.image} alt={m.heroPhotoAlt} width={1024} height={1024} priority />
         </div>
       </div>
     </section>
@@ -106,7 +104,10 @@ export default function HomePage() {
       <RevealObserver />
 
       <main>
-        <HeroExperience fallback={staticHero} />
+        <HeroExperience
+          fallback={staticHero}
+          content={{ brand: company.brand, hero, technology: technology.items }}
+        />
 
         <section className="statsbar">
           <div className="wrap">
@@ -140,28 +141,24 @@ export default function HomePage() {
         <section id="about" className="section">
           <div className="wrap split">
             <div className="split__media" data-reveal="image" data-parallax>
-              <Image src={about.image} alt="Biệt thự sử dụng thang máy ELITE" width={950} height={1150} />
+              <Image src={about.image} alt={m.aboutImageAlt} width={950} height={1150} />
             </div>
             <div className="split__text" data-reveal="cascade">
-              <span className="label label--gold rule">Hồ sơ công ty</span>
+              <span className="label label--gold rule">{m.profile}</span>
               <h2>{company.legalName}</h2>
               {about.paragraphs.map((p) => (
                 <p key={p} className="muted">
                   {p}
                 </p>
               ))}
-              <p className="label">Dải sản phẩm</p>
+              <p className="label">{m.range}</p>
               <ul className="tags">
                 {about.range.map((r) => (
                   <li key={r}>{r}</li>
                 ))}
               </ul>
-              <p className="muted lifecycle">
-                Hệ thống làm việc khép kín: {about.lifecycle.join(" · ")}.
-              </p>
-              <span className="label">
-                {company.legalNameEn} · Mã số thuế {company.taxCode}
-              </span>
+              <p className="muted lifecycle">{m.lifecycle(about.lifecycle.join(" · "))}</p>
+              <span className="label">{m.taxLine(company.legalNameEn, company.taxCode)}</span>
             </div>
           </div>
         </section>
@@ -170,14 +167,14 @@ export default function HomePage() {
           <div className="wrap">
             <header className="section__head" data-reveal>
               <div>
-                <span className="label label--gold rule">Công nghệ</span>
+                <span className="label label--gold rule">{m.techLabel}</span>
                 <h2>
-                  Công nghệ dẫn đầu
+                  {m.techTitle[0]}
                   <br />
-                  Hiệu năng vượt trội
+                  {m.techTitle[1]}
                 </h2>
               </div>
-              <p className="muted">Leading Technology · Outstanding Performance</p>
+              <p className="muted">{m.techSub}</p>
             </header>
             <div className="tech">
               <ul className="tech__list" data-reveal="stagger">
@@ -192,7 +189,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <div className="tech__media" data-reveal="image" data-parallax>
-                <Image src={technology.image} alt="Cabin thang máy ELITE với màn hình điều khiển" width={950} height={1150} />
+                <Image src={technology.image} alt={m.techImageAlt} width={950} height={1150} />
               </div>
             </div>
           </div>
@@ -202,13 +199,13 @@ export default function HomePage() {
           <div className="wrap">
             <header className="section__head" data-reveal>
               <div>
-                <span className="label label--gold rule">Sản phẩm</span>
-                <h2>Thang máy biệt thự</h2>
+                <span className="label label--gold rule">{m.productsLabel}</span>
+                <h2>{m.productsTitle}</h2>
               </div>
               <div className="section__aside">
-                <p className="muted">Elegant Villas Art Collection</p>
-                <Link className="arrow-link" href="/san-pham">
-                  Xem toàn bộ sản phẩm <span aria-hidden="true">→</span>
+                <p className="muted">{m.productsSub}</p>
+                <Link className="arrow-link" href="/products">
+                  {m.viewAllProducts} <span aria-hidden="true">→</span>
                 </Link>
               </div>
             </header>
@@ -247,7 +244,7 @@ export default function HomePage() {
                     )}
                     {"chips" in p && p.chips && (
                       <div>
-                        <p className="label">Phương thức mở cửa</p>
+                        <p className="label">{common.doorTypes}</p>
                         <ul className="tags">
                           {p.chips.map((c) => (
                             <li key={c}>{c}</li>
@@ -256,8 +253,8 @@ export default function HomePage() {
                       </div>
                     )}
                     {"note" in p && p.note && <p className="muted">{p.note}</p>}
-                    <Link className="btn btn--ghost line__cta" href={`/san-pham/${p.slug}`}>
-                      Xem chi tiết sản phẩm <span aria-hidden="true">→</span>
+                    <Link className="btn btn--ghost line__cta" href={`/products/${p.slug}`}>
+                      {m.viewProduct} <span aria-hidden="true">→</span>
                     </Link>
                   </div>
                 </article>
@@ -265,22 +262,22 @@ export default function HomePage() {
 
               <article className="line line--flip">
                 <div className="line__media" data-reveal="image" data-parallax>
-                  <Image src={wellFrames.image} alt="Giếng thang hợp kim nhôm và kính" width={950} height={1150} />
-                  <span className="chip chip--tl">Giếng thang</span>
+                  <Image src={wellFrames.image} alt={m.wellImageAlt} width={950} height={1150} />
+                  <span className="chip chip--tl">{m.wellChip}</span>
                 </div>
                 <div className="line__body" data-reveal="cascade">
                   <span className="line__index label">{String(productLines.length + 1).padStart(2, "0")}</span>
-                  <h3 className="line__title">Giếng thang kết cấu thép &amp; hợp kim nhôm</h3>
+                  <h3 className="line__title">{m.wellTitle}</h3>
                   <div>
-                    <p className="label label--gold">Kết cấu thép</p>
+                    <p className="label label--gold">{m.wellSteel}</p>
                     <p className="muted">{wellFrames.steel}</p>
                   </div>
                   <div>
-                    <p className="label label--gold">Hợp kim nhôm</p>
+                    <p className="label label--gold">{m.wellAluminum}</p>
                     <p className="muted">{wellFrames.aluminum}</p>
                   </div>
                   <div>
-                    <p className="label">Khung kim loại sơn phủ cao cấp</p>
+                    <p className="label">{m.wellPaint}</p>
                     <ul className="swatches">
                       {wellFrames.colors.map((c) => (
                         <li key={c.name}>
@@ -297,15 +294,15 @@ export default function HomePage() {
             <div className="catalog">
               <header className="section__head" data-reveal>
                 <div>
-                  <span className="label label--gold rule">Danh mục</span>
-                  <h2>Toàn bộ sản phẩm</h2>
+                  <span className="label label--gold rule">{m.catalogLabel}</span>
+                  <h2>{m.catalogTitle}</h2>
                 </div>
-                <Link className="btn btn--outline" href="/san-pham">
-                  Xem {products.length} sản phẩm <span aria-hidden="true">→</span>
+                <Link className="btn btn--outline" href="/products">
+                  {m.viewCount(products.length)} <span aria-hidden="true">→</span>
                 </Link>
               </header>
               <div data-reveal>
-                <ProductRail products={products} />
+                <ProductRail products={products} categories={categories} />
               </div>
             </div>
           </div>
@@ -315,16 +312,16 @@ export default function HomePage() {
           <div className="wrap">
             <header className="section__head" data-reveal>
               <div>
-                <span className="label label--gold rule">Cabin</span>
-                <h2>Phong cách nội thất cabin</h2>
+                <span className="label label--gold rule">{m.cabinsLabel}</span>
+                <h2>{m.cabinsTitle}</h2>
               </div>
-              <p className="muted">Lựa chọn không gian sống đẳng cấp.</p>
+              <p className="muted">{m.cabinsSub}</p>
             </header>
             <ul className="cards cards--cabins" data-reveal="stagger">
               {cabins.map((c, i) => (
                 <li key={c.code} className="card" style={order(i)} data-spotlight>
                   <div className="card__photo card__photo--tall">
-                    <Image src={c.image} alt={`Cabin ${c.code} — ${c.name}`} width={500} height={900} />
+                    <Image src={c.image} alt={m.cabinAlt(c.code, c.name)} width={500} height={900} />
                     <span className="chip chip--tl">{c.code}</span>
                     <span className="chip chip--br">{c.level}</span>
                   </div>
@@ -342,14 +339,14 @@ export default function HomePage() {
         <section id="services" className="section">
           <div className="wrap split split--wide">
             <div className="split__media split__media--short" data-reveal="image">
-              <Image src={services.image} alt="Tư vấn viên Phú An" width={370} height={900} />
+              <Image src={services.image} alt={m.servicesImageAlt} width={370} height={900} />
             </div>
             <div className="split__text" data-reveal>
-              <span className="label label--gold rule">Dịch vụ</span>
+              <span className="label label--gold rule">{m.servicesLabel}</span>
               <h2>
-                Dịch vụ hoàn hảo
+                {m.servicesTitle[0]}
                 <br />
-                Lựa chọn chuyên nghiệp
+                {m.servicesTitle[1]}
               </h2>
               <ol className="steps" data-reveal="stagger">
                 {services.items.map((s, i) => (
@@ -369,37 +366,37 @@ export default function HomePage() {
         <section id="contact" className="section section--low">
           <div className="wrap">
             <div className="panel cta" data-reveal>
-              <span className="label label--gold">Liên hệ</span>
-              <h2>Đặt lịch khảo sát &amp; nhận tư vấn</h2>
+              <span className="label label--gold">{m.contactLabel}</span>
+              <h2>{m.contactTitle}</h2>
               <p className="muted">{company.slogan}.</p>
               <dl className="contact">
                 <div>
-                  <dt className="label">Hotline</dt>
+                  <dt className="label">{m.hotline}</dt>
                   <dd>
                     <a href={tel(company.hotline)}>{company.hotline}</a>
                   </dd>
                 </div>
                 <div>
-                  <dt className="label">Điện thoại</dt>
+                  <dt className="label">{m.phone}</dt>
                   <dd>
                     <a href={tel(company.phone)}>{company.phone}</a>
                   </dd>
                 </div>
                 <div>
-                  <dt className="label">Email</dt>
+                  <dt className="label">{m.email}</dt>
                   <dd>
                     <a href={`mailto:${company.email}`}>{company.email}</a>
                   </dd>
                 </div>
                 <div>
-                  <dt className="label">Địa chỉ</dt>
+                  <dt className="label">{m.address}</dt>
                   <dd>{company.address}</dd>
                 </div>
               </dl>
-              <CompanyMap />
+              <CompanyMap locale={locale} address={company.address} />
               <div className="hero__actions">
                 <a className="btn btn--solid" href={tel(company.hotline)}>
-                  Gọi hotline
+                  {m.callUs}
                 </a>
                 <a className="btn btn--ghost" href={company.zalo} target="_blank" rel="noopener noreferrer">
                   Zalo

@@ -1,4 +1,4 @@
-// Product catalogue for /san-pham. The product types follow the range in the ELITE catalogue (see `about.range`
+// Product catalogue for /products. The product types follow the range in the ELITE catalogue (see `about.range`
 // in site.ts), and the villa lines reuse the catalogue text from `productLines`.
 //
 // PLACEHOLDER CONTENT: everything in a product marked `draft: true` that is not imported from site.ts (specs,
@@ -6,11 +6,10 @@
 // NOT from the catalogue. Most images are reused catalogue photos and do not show the actual product yet.
 // Replace both with real data before publishing.
 
+import type { CategoryId, Product } from "../types";
 import { productLines } from "./site";
 
 const IMG = "/images/catalogue";
-
-export type CategoryId = "gia-dinh" | "tai-khach" | "chuyen-dung" | "thang-cuon";
 
 export const categories: { id: CategoryId; label: string; note: string }[] = [
   { id: "gia-dinh", label: "Thang máy gia đình", note: "Biệt thự, nhà phố, căn hộ cải tạo" },
@@ -19,38 +18,13 @@ export const categories: { id: CategoryId; label: string; note: string }[] = [
   { id: "thang-cuon", label: "Thang cuốn & băng tải", note: "Trung tâm thương mại, nhà ga, sân bay" },
 ];
 
-export type Spec = { label: string; value: string };
-
-export type Product = {
-  slug: string;
-  name: string;
-  nameEn: string;
-  category: CategoryId;
-  tagline: string;
-  summary: string[];
-  /** The first image is the cover. */
-  images: string[];
-  /** Three or four headline figures shown on cards and at the top of the detail page. */
-  highlights: Spec[];
-  features: string[];
-  specs: Spec[];
-  doors?: string[];
-  /** 3D model (glTF binary, authored in metres) shown with an AR button on the detail page. */
-  ar?: { glb: string; alt: string };
-  /** Show the cabin interior styles (V01 – V11) on the detail page. */
-  cabins?: boolean;
-  applications: string[];
-  /** True while the product still carries placeholder content (see the note at the top of this file). */
-  draft: boolean;
-};
-
 const [traction, platform, round] = productLines;
 
 export const products: Product[] = [
   {
     slug: "thang-may-biet-thu-keo-cap",
     name: "Thang máy biệt thự kiểu kéo cáp",
-    nameEn: "Traction villa elevator",
+    altName: "Traction villa elevator",
     category: "gia-dinh",
     tagline: "Êm ái, tiết kiệm điện, không cần phòng máy truyền thống",
     summary: [
@@ -77,7 +51,7 @@ export const products: Product[] = [
       { label: "Cứu hộ khi mất điện", value: "Nguồn dự phòng UPS" },
     ],
     doors: traction.chips,
-    ar: { glb: "/models/thang-may-elevator-only.glb", alt: "Mô hình 3D cabin thang máy ELITE" },
+    ar: { glb: "/models/elevator-only.glb", alt: "Mô hình 3D cabin thang máy ELITE" },
     cabins: true,
     applications: ["Biệt thự", "Nhà phố", "Căn hộ penthouse", "Nhà ở cải tạo"],
     draft: true,
@@ -85,7 +59,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-biet-thu-nang-san",
     name: "Thang máy biệt thự kiểu nâng sàn",
-    nameEn: "Platform villa elevator",
+    altName: "Platform villa elevator",
     category: "gia-dinh",
     tagline: "Lắp đặt linh hoạt trong không gian giếng thang hạn chế",
     summary: [
@@ -108,7 +82,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tron-biet-thu",
     name: "Thang máy tròn biệt thự",
-    nameEn: "Round villa elevator",
+    altName: "Round villa elevator",
     category: "gia-dinh",
     tagline: "Tác phẩm nghệ thuật giữa không gian sống",
     summary: [round.paragraphs?.[0] ?? ""],
@@ -141,7 +115,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-ban-nguyet-biet-thu",
     name: "Thang máy bán nguyệt biệt thự",
-    nameEn: "Semicircular villa elevator",
+    altName: "Semicircular villa elevator",
     category: "gia-dinh",
     tagline: "Rộng rãi hơn, ấn tượng hơn",
     summary: [round.paragraphs?.[1] ?? ""],
@@ -174,7 +148,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tai-khach",
     name: "Thang máy tải khách",
-    nameEn: "Passenger elevator",
+    altName: "Passenger elevator",
     category: "tai-khach",
     tagline: "Vận hành ổn định cho tòa nhà nhiều tầng",
     summary: [
@@ -208,7 +182,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-quan-sat",
     name: "Thang máy quan sát (thang kính)",
-    nameEn: "Panoramic elevator",
+    altName: "Panoramic elevator",
     category: "tai-khach",
     tagline: "Biến hành trình thành trải nghiệm thị giác",
     summary: [
@@ -240,7 +214,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-khong-phong-may",
     name: "Thang máy không phòng máy",
-    nameEn: "Machine-room-less elevator",
+    altName: "Machine-room-less elevator",
     category: "tai-khach",
     tagline: "Tiết kiệm diện tích và chi phí xây dựng",
     summary: [
@@ -273,7 +247,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-phong-may-nho",
     name: "Thang máy phòng máy nhỏ",
-    nameEn: "Small machine room elevator",
+    altName: "Small machine room elevator",
     category: "tai-khach",
     tagline: "Phòng máy gọn bằng diện tích giếng thang",
     summary: ["Phòng máy được thu gọn bằng diện tích mặt cắt giếng thang, thuận tiện cho bảo trì và sửa chữa."],
@@ -302,7 +276,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-thuy-luc",
     name: "Thang máy thủy lực",
-    nameEn: "Hydraulic elevator",
+    altName: "Hydraulic elevator",
     category: "tai-khach",
     tagline: "Giải pháp cho công trình thấp tầng, hố PIT nông",
     summary: ["Truyền động bằng xi lanh thủy lực, phù hợp công trình thấp tầng và tải trọng lớn."],
@@ -326,7 +300,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tai-benh-nhan",
     name: "Thang máy tải bệnh nhân",
-    nameEn: "Hospital bed elevator",
+    altName: "Hospital bed elevator",
     category: "chuyen-dung",
     tagline: "Cabin sâu cho giường bệnh, dừng tầng chính xác",
     summary: ["Cabin kích thước sâu chứa vừa giường bệnh và nhân viên y tế, vận hành êm và dừng tầng chính xác."],
@@ -350,7 +324,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tai-hang",
     name: "Thang máy tải hàng",
-    nameEn: "Freight elevator",
+    altName: "Freight elevator",
     category: "chuyen-dung",
     tagline: "Kết cấu chắc chắn cho hàng hóa nặng",
     summary: ["Cabin và sàn gia cường cho hàng hóa nặng, phù hợp nhà xưởng, kho bãi và siêu thị."],
@@ -374,7 +348,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tai-o-to",
     name: "Thang máy tải ô tô",
-    nameEn: "Car elevator",
+    altName: "Car elevator",
     category: "chuyen-dung",
     tagline: "Đưa xe lên tầng, tối ưu diện tích đỗ",
     summary: ["Thang máy chuyên dụng vận chuyển ô tô giữa các tầng, phù hợp nhà phố, showroom và bãi đỗ xe."],
@@ -397,7 +371,7 @@ export const products: Product[] = [
   {
     slug: "thang-may-tai-thuc-pham",
     name: "Thang máy tải thực phẩm (tời thực phẩm)",
-    nameEn: "Dumbwaiter",
+    altName: "Dumbwaiter",
     category: "chuyen-dung",
     tagline: "Nhỏ gọn, chuyên chở món ăn và hàng nhẹ",
     summary: ["Tời thực phẩm cỡ nhỏ chuyên chở món ăn, đồ dùng giữa bếp và các tầng phục vụ."],
@@ -420,7 +394,7 @@ export const products: Product[] = [
   {
     slug: "thang-cuon",
     name: "Thang cuốn",
-    nameEn: "Escalator",
+    altName: "Escalator",
     category: "thang-cuon",
     tagline: "Di chuyển liên tục cho lưu lượng lớn",
     summary: ["Thang cuốn cho các công trình công cộng có lưu lượng người qua lại lớn."],
@@ -443,7 +417,7 @@ export const products: Product[] = [
   {
     slug: "bang-tai-bo",
     name: "Băng tải bộ",
-    nameEn: "Moving walk",
+    altName: "Moving walk",
     category: "thang-cuon",
     tagline: "Di chuyển ngang hoặc dốc nhẹ cho xe đẩy",
     summary: ["Băng tải bộ cho quãng đường dài hoặc dốc nhẹ, thuận tiện cho người đi bộ kèm xe đẩy hàng."],

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMessages } from "@/i18n/LocaleProvider";
 
 // <model-viewer> is a custom element, so React needs its attributes declared.
 declare module "react" {
@@ -29,6 +30,7 @@ type Props = { src: string; alt: string };
  * The model must be authored in metres; `ar-scale="fixed"` keeps it at that real-world size in AR.
  */
 export function ProductAR({ src, alt }: Props) {
+  const m = useMessages().ar;
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -58,11 +60,11 @@ export function ProductAR({ src, alt }: Props) {
           touch-action="pan-y"
         >
           <button slot="ar-button" type="button" className="btn btn--solid arview__ar">
-            Xem trong không gian của bạn
+            {m.button}
           </button>
         </model-viewer>
       ) : (
-        <div className="arview__viewer arview__loading label">Đang tải mô hình 3D…</div>
+        <div className="arview__viewer arview__loading label">{m.loading}</div>
       )}
     </div>
   );
