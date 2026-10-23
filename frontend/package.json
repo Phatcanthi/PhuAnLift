@@ -12,6 +12,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@google/model-viewer": "4.4.0",
         "@react-three/fiber": "9.8.2",
         "next": "15.5.28",
         "react": "19.1.1",
@@ -26,6 +27,9 @@
         "typescript": "^5.9.0"
     },
     "overrides": {
+        "@google/model-viewer": {
+            "three": "$three"
+        },
         "postcss": "^8.5.31"
     }
 }

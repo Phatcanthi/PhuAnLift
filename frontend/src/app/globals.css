@@ -196,6 +196,16 @@ h1 em { display: block; font-size: 0.55em; letter-spacing: 0.12em; margin-top: 1
 .contact dd { margin-top: 6px; overflow-wrap: anywhere; }
 .contact a:hover { color: var(--primary); }
 
+/* 3D / AR viewer */
+.arview { position: relative; }
+.arview__viewer { display: block; width: 100%; height: clamp(360px, 60vw, 620px); border-radius: 12px; background: radial-gradient(ellipse at 50% 35%, var(--surface-high), var(--surface-lowest)); --poster-color: transparent; }
+.arview__loading { display: grid; place-items: center; }
+.arview__ar { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); }
+
+/* Google Maps embed */
+.map { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.map__frame { width: 100%; height: clamp(280px, 40vw, 420px); border: 0; border-radius: 8px; background: var(--surface-container); filter: grayscale(0.3) contrast(1.05); }
+
 /* footer */
 .footer { background: var(--surface-lowest); border-top: 1px solid rgba(78, 70, 57, 0.3); padding: clamp(48px, 7vw, 80px) 0 32px; }
 .footer__grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 40px 32px; padding-bottom: 48px; }

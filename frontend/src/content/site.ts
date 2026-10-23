@@ -13,6 +13,8 @@ export const company = {
   slogan: "Phú An luôn luôn sẵn sàng phục vụ quý khách hàng",
   taxCode: "0309509480",
   address: "Số 6 đường số 1, Phường Bình Hưng Hòa, Thành phố Hồ Chí Minh",
+  /** Query that Google Maps resolves to the right pin (the displayed `address` wording points elsewhere). */
+  mapQuery: "6 Đ. số 1, Bình Hưng Hòa, Hồ Chí Minh, Vietnam",
   phone: "(028) 6273 9239",
   hotline: "0907 702 512",
   email: "nvquang2512@gmail.com",
